@@ -39,9 +39,10 @@ fs.writeFileSync(FILE_NAME, "", (e) => {
 
 sock.identity = clientId;
 
-sock.connect("tcp://127.0.0.1:1112"); // Leer desde config
+// Conectar con el proxy
+sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
-const objeto = eligeOb(OBJETOS);
+const manejador = eligeManejador(OBJETOS);
 
 op = generaOp(1);
 
@@ -81,7 +82,7 @@ sock.on('message', function (...args) {
  * Elige aleatoriamente un objeto al que hacer la solicitud
  * @param {string[]} objetos - Nombres de los objetos entre los que elegir
  */
-function eligeOb(objetos) {
+function eligeManejador(objetos) {
     const index = Math.floor(Math.random() * objetos.length);
     return objetos[index];
 }

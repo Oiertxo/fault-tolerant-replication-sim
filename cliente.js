@@ -29,6 +29,13 @@ let opnum = 1;
 let op = null;
 let delta = 1000; // Usar TIMEOUT
 
+// Variables auxiliares
+let intervalID = null;
+let manejadores = [];
+for (let i = 0; i < config.manejadores; i++) {
+    manejadores.push(i);
+}
+
 // Crear el fichero o vaciarlo si ya existe
 if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => { });
 fs.writeFileSync(FILE_NAME, "", (e) => {
@@ -42,49 +49,70 @@ sock.identity = clientId;
 // Conectar con el proxy
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
-const manejador = eligeManejador(OBJETOS);
-
-op = generaOp(1);
-
-// cmd con el id del cliente, numero de operacion y la operacion
-const cmd = {
-    cltid: clientId,
-    opnum: 1,
-    op: op
-}
-
 // Variable auxiliar para medir lo que tarda en recibir respuestas
 const START_TIME = date.getTime();
 
-// Envía un mensaje al objeto basado en argumentos pasados al script
-getFromServer(objeto, cmd, START_TIME, FILE_NAME);
+if (!running) {
+    running = true;
+    op = generaOp(1);
+    rhid = eligeManejador(config.objetos);
+    let msg = {
+        'source': clientId,
+        'dest': rhid,
+        'tag': "REQUEST",
+        'seq': null,
+        'cmd': {
+            cltid: clientId,
+            opnum: opnum,
+            op: op
+        },
+        'res': null
+    };
+    sock.send(['', JSON.stringify(msg)]);
+    delta = 1000;
+    // Timeout
+    intervalID = setInterval(() => {
+        rhid = eligeManejador(manejadores.filter((manejador) => manejador !== rhid));
+        msg.dest = rhid;
+        sock.send(['', JSON.stringify(msg)]);
+    }, delta);
+} else {
+    return "Abort command";
+}
 
 // Escucha respuestas del objeto
 sock.on('message', function (...args) {
     // Asume que el segundo argumento es el mensaje
     if (args[1]) {
         const message = JSON.parse(args[1])
-        log_file(FILE_NAME, message, START_TIME);
-        console.log(message.dest, "\x1b[35m: Respuesta recibida de:\x1b[0m", message.source);
-        cmd.opnum++;
-        cmd.op = generaOp(cmd.opnum);
-        if (cmd.opnum < 11) {
-            getFromServer(eligeOb(OBJETOS), cmd, START_TIME, FILE_NAME);
+        if (message.dest === clientId && message.tag === "REPLY" && message.seq > 0 && message.cmd === cmd) {
+            clearInterval(intervalID);
+            running = false;
+            opnum++;
+            Deliver_ResCommand(message);
         }
+        
     } else {
         console.error("Unexpected message format.");
     }
 });
 
-
+/**
+ * Entrega el mensaje a la aplicación
+ * @param {Object} message - Mensaje a entregar
+ */
+function Deliver_ResCommand(message) {
+    log_file(FILE_NAME, message, START_TIME);
+    console.log(message.dest, "\x1b[35m: Respuesta recibida de:\x1b[0m", message.source);
+}
 
 /**
- * Elige aleatoriamente un objeto al que hacer la solicitud
- * @param {string[]} objetos - Nombres de los objetos entre los que elegir
+ * Elige aleatoriamente un manejador al que hacer la solicitud
+ * @param {string[]} manejadores - Nombres de los manejadores entre los que elegir
  */
-function eligeManejador(objetos) {
-    const index = Math.floor(Math.random() * objetos.length);
-    return objetos[index];
+function eligeManejador(manejadores) {
+    const index = Math.floor(Math.random() * manejadores.length);
+    return manejadores[index];
 }
 
 /**
@@ -97,24 +125,6 @@ function generaOp(numOp) {
         name: randAux < 0.5 ? "get" : "put",
         args: randAux < 0.5 ? "pruebas" : `pruebas valor_pruebas_${clientId}_${numOp}`
     }
-}
-
-/**
- * Envía un mensaje estructurado al objeto.
- * @param {string} objeto - El objeto de destino.
- * @param {object} cmd - El comando a realizar.
- */
-function getFromServer(objeto, cmd, start_time, file_name) {
-    const message = {
-        'source': sock.identity,
-        'dest': objeto,
-        'tag': "REQUEST",
-        'cmd': cmd,
-        'res': null
-    };
-    sock.send(['', JSON.stringify(message)]);
-    log_file(file_name, message, start_time);
-    console.log(message.source, "\x1b[35m: Solicitud hecha a: \x1b[0m", message.dest);
 }
 
 function log_file(name, msg, start_time) {

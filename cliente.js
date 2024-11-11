@@ -22,17 +22,17 @@ const clientId = process.argv[2];
 const FILE_NAME = `./logs/log_${clientId}.txt`;
 
 // Crear el fichero o vaciarlo si ya existe
-if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => {});
+if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => { });
 fs.writeFileSync(FILE_NAME, "", (e) => {
-    if (e){
+    if (e) {
         console.log(`Error al crear fichero: ${e}`);
     }
 });
 
 sock.identity = clientId;
 
-sock.connect("tcp://127.0.0.1:1112"); 
- 
+sock.connect("tcp://127.0.0.1:1112");
+
 const objeto = eligeOb(OBJETOS);
 
 let op = generaOp(1);
@@ -48,7 +48,7 @@ const cmd = {
 const START_TIME = date.getTime();
 
 // Envía un mensaje al objeto basado en argumentos pasados al script
-getFromServer(objeto, cmd, START_TIME, FILE_NAME); 
+getFromServer(objeto, cmd, START_TIME, FILE_NAME);
 
 // Escucha respuestas del objeto
 sock.on('message', function (...args) {
@@ -57,9 +57,9 @@ sock.on('message', function (...args) {
         const message = JSON.parse(args[1])
         log_file(FILE_NAME, message, START_TIME);
         console.log(message.dest, "\x1b[35m: Respuesta recibida de:\x1b[0m", message.source);
-        cmd.opnum ++;
+        cmd.opnum++;
         cmd.op = generaOp(cmd.opnum);
-        if (cmd.opnum < 11){
+        if (cmd.opnum < 11) {
             getFromServer(eligeOb(OBJETOS), cmd, START_TIME, FILE_NAME);
         }
     } else {
@@ -73,7 +73,7 @@ sock.on('message', function (...args) {
  * Elige aleatoriamente un objeto al que hacer la solicitud
  * @param {string[]} objetos - Nombres de los objetos entre los que elegir
  */
-function eligeOb(objetos){
+function eligeOb(objetos) {
     const index = Math.floor(Math.random() * objetos.length);
     return objetos[index];
 }
@@ -82,11 +82,11 @@ function eligeOb(objetos){
  * Elige aleatoriamnete entre hacer un get o un set de un valor
  * 
  */
-function generaOp(numOp){
+function generaOp(numOp) {
     const randAux = Math.random();
     return {
-        name: randAux < 0.5 ? "get": "put",
-        args: randAux < 0.5 ? "pruebas": `pruebas valor_pruebas_${clientId}_${numOp}`
+        name: randAux < 0.5 ? "get" : "put",
+        args: randAux < 0.5 ? "pruebas" : `pruebas valor_pruebas_${clientId}_${numOp}`
     }
 }
 
@@ -108,7 +108,7 @@ function getFromServer(objeto, cmd, start_time, file_name) {
     console.log(message.source, "\x1b[35m: Solicitud hecha a: \x1b[0m", message.dest);
 }
 
-function log_file(name, msg, start_time){
+function log_file(name, msg, start_time) {
     const type = msg.tag === "REQUEST" ? "inv" : "res";
     const key = msg.tag === "REQUEST" ? msg.dest : msg.source;
     const value = msg.tag === "REQUEST" ? msg.cmd.op.args : msg.res;
@@ -116,30 +116,30 @@ function log_file(name, msg, start_time){
     const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
 
     const content = {
-        tipo_e: type, 
-        op: cmd.op.name, 
+        tipo_e: type,
+        op: cmd.op.name,
         clave: key,
-        valor: value, 
-        n: n, 
-        id:id,
+        valor: value,
+        n: n,
+        id: id,
         t: new Date().getTime() - start_time
     };
     const line = JSON.stringify(content) + "\n";
 
-    fs.writeFileSync(name, line, {flag : "a+"}, (e) => {
-        if (e){
+    fs.writeFileSync(name, line, { flag: "a+" }, (e) => {
+        if (e) {
             console.log(`Error al escribir en fichero: ${e}`);
         }
     });
 }
 
 // Cierra el socket correctamente al recibir una señal de interrupción
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
     console.log('Closing client socket...');
     sock.close();
 });
 
-process.on('SIGTERM', function() {
+process.on('SIGTERM', function () {
     console.log('Closing client socket...');
     sock.close();
 });

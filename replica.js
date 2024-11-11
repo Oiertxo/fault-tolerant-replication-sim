@@ -28,7 +28,7 @@ sock.on('message', function (...args) {
     }
 
     console.log(message.dest,
-         `\x1b[32m: Solicitud recibida de\x1b[0m ${message.source}\x1b[32m. Ejecutando en base de datos\x1b[0m`);
+        `\x1b[32m: Solicitud recibida de\x1b[0m ${message.source}\x1b[32m. Ejecutando en base de datos\x1b[0m`);
 
     // Preparar el mensaje de respuesta
     const resp_message = {
@@ -37,7 +37,7 @@ sock.on('message', function (...args) {
         source: sock.identity,
         dest: message.source
     };
-    
+
 
     // Manejar operación 'get'
     if (message.cmd.op.name === 'get') {
@@ -60,12 +60,12 @@ sock.on('message', function (...args) {
 });
 
 // Cierra el socket correctamente al recibir una señal de interrupción
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
     console.log('Shutting down server...');
     sock.close();
 });
 
-process.on('SIGTERM', function() {
+process.on('SIGTERM', function () {
     console.log('Shutting down server...');
     sock.close();
 });

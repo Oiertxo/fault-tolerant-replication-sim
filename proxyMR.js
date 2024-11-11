@@ -45,13 +45,13 @@ frontRouter.on('message', function (...args) {
 });
 
 // Manejo de la señal de interrupción para cerrar los sockets correctamente
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
     console.log('Shutting down...');
     backRouter.close();
     frontRouter.close();
 });
 
-process.on('SIGTERM', function() {
+process.on('SIGTERM', function () {
     console.log('Shutting down...');
     backRouter.close();
     frontRouter.close();

@@ -6,11 +6,12 @@
 
 const zmq = require('zeromq');
 const fs = require('node:fs');
+const { TIMEOUT } = require('node:dns');
 
 const date = new Date();
 
-// Objetos con los que se puede comunicar el cliente
-const OBJETOS = ["O1", "O2", "O3"];
+// Lectura de la configuración
+const config = fs.readFileSync('./config.json', 'utf8');
 
 // Crear un socket 'dealer' y establecer su identidad basada en el PID del proceso
 const sock = zmq.socket('dealer');
@@ -20,6 +21,13 @@ const clientId = process.argv[2];
 
 // Nombre del fichero donde guardar el log
 const FILE_NAME = `./logs/log_${clientId}.txt`;
+
+// Variables
+let running = false;
+let rhid = 0;
+let opnum = 1;
+let op = null;
+let delta = 1000; // Usar TIMEOUT
 
 // Crear el fichero o vaciarlo si ya existe
 if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => { });
@@ -31,11 +39,11 @@ fs.writeFileSync(FILE_NAME, "", (e) => {
 
 sock.identity = clientId;
 
-sock.connect("tcp://127.0.0.1:1112");
+sock.connect("tcp://127.0.0.1:1112"); // Leer desde config
 
 const objeto = eligeOb(OBJETOS);
 
-let op = generaOp(1);
+op = generaOp(1);
 
 // cmd con el id del cliente, numero de operacion y la operacion
 const cmd = {

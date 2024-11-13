@@ -7,6 +7,9 @@
 const zmq = require('zeromq');
 const { Level } = require('level');
 
+// Lectura de la configuración
+const config = require('./config.json');
+
 // Configuración e inicialización del socket y la base de datos
 const sock = zmq.socket('dealer');
 
@@ -17,7 +20,7 @@ sock.identity = process.argv[2];
 const db = new Level(`./bbdd/${process.argv[3]}`);
 
 // Conectar con el proxy
-sock.connect("tcp://127.0.0.1:2221");
+sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR);
 
 // Variables para objetos replicados
 let toexecute = []; // a vector of pairs (rhid, cmd). The first index is 1. Initially, ∀i : toexecute[i] = null;

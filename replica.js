@@ -44,46 +44,44 @@ sock.on('message', function (...args) {
     if (message.seq === expectseq) {
         toexecute[expectseq] = { source: message.source, cmd: message.cmd };
 
+        // Ejecutar los comandos pendientes
         while (toexecute[expectseq] !== null) {
-            let { source, cmd } = toexecute[expectseq];
+            // Obtener el comando a ejecutar
+            let { rhid, cmd } = toexecute[expectseq];
 
-            const resp_message = {
-                ...message,
-                tag: "TOREPLY",
-                cmd: cmd,
-                source: process.argv[2],
-                dest: source
-            };
-
-            // Manejar operación 'get'
-            if (cmd.op.name === 'get') {
-                db.get(cmd.op.args, (err, value) => {
-                    resp_message.res = err ? `error: ${err.message}` : value;
-                    sock.send(['', JSON.stringify(resp_message)]);
-                });
-            }
-            // Manejar operación 'put'
-            else if (cmd.op.name === 'put') {
-                const [key, value] = cmd.op.args.split(" ");
-                db.put(key, value, (err) => {
-                    resp_message.res = err ? `error: ${err.message}` : 'OK';
-                    sock.send(['', JSON.stringify(resp_message)]);
-                });
-            } else {
-                resp_message.res = `error: unsupported operation ${cmd.op.name}`;
-                sock.send(['', JSON.stringify(resp_message)]);
-            }
+            // Ejecutar el comando
+            let res = Execute(cmd);
 
             // Añadir comando a executed
             executed[expectseq] = { cmd: cmd, res: resp_message.res };
 
+            // Preparar el mensaje de respuesta
+            const resp_message = {
+                source: process.argv[2],
+                dest: rhid,
+                tag: "TOREPLY",
+                seq: expectseq,
+                cmd: cmd,
+                res: res,
+            };
+
+            // Enviar la respuesta
+            sock.send(['', JSON.stringify(resp_message)]);
+
             // Actualizar expectseq
             expectseq++;
         }
-    } else if (message.seq < expectseq) { // Si el mensaje ya fue ejecutado
+    }
+
+    // Si el mensaje es para ejecutar en el futuro
+    else if (expectseq < message.seq) {
         // Almacenar el mensaje para ejecutarlo más tarde
         toexecute[message.seq] = { source: message.source, cmd: message.cmd };
-    } else { // Si el mensaje es para ejecutar en el futuro
+    }
+
+    // Si el mensaje ya fue ejecutado
+    else {
+        // Obtener el comando ejecutado
         let { cmd, res } = executed[message.seq];
 
         // Preparar el mensaje de respuesta
@@ -100,6 +98,30 @@ sock.on('message', function (...args) {
         sock.send(['', JSON.stringify(msgres)]);
     }
 });
+
+// Función para ejecutar comandos
+function Execute(cmd) {
+    let res = null;
+
+    switch (cmd.op.name) {
+        case "put":
+            const [key, value] = cmd.op.args.split(" ");
+            db.put(key, value, (err) => {
+                res = err ? `Error: ${err.message}` : 'OK';
+            });
+            break;
+        case "get":
+            db.get(cmd.op.args, (err, value) => {
+                res = err ? `Error: ${err.message}` : value;
+            });
+            break;
+        default:
+            res = `Error: unsupported operation: ${cmd.op.name}`;
+            break;
+    }
+
+    return res;
+}
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {

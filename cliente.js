@@ -6,12 +6,12 @@
 
 const zmq = require('zeromq');
 const fs = require('node:fs');
-const { TIMEOUT } = require('node:dns');
+// const { TIMEOUT } = require('node:dns');
 
-const date = new Date();
+// const date = new Date();
 
 // Lectura de la configuración
-const config = fs.readFileSync('./config.json', 'utf8');
+const config = require('./config.json');
 
 // Crear un socket 'dealer' y establecer su identidad basada en el PID del proceso
 const sock = zmq.socket('dealer');
@@ -26,7 +26,6 @@ const FILE_NAME = `./logs/log_${clientId}.txt`;
 let running = false;
 let rhid = 0;
 let opnum = 1;
-let op = null;
 let delta = 1000; // Usar TIMEOUT
 
 // Variables auxiliares
@@ -47,38 +46,48 @@ fs.writeFileSync(FILE_NAME, "", (e) => {
 sock.identity = clientId;
 
 // Conectar con el proxy
-sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
+sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM);
 
 // Variable auxiliar para medir lo que tarda en recibir respuestas
-const START_TIME = date.getTime();
+// const START_TIME = date.getTime();
 
-if (!running) {
-    running = true;
-    op = generaOp(1);
-    rhid = eligeManejador(config.objetos);
-    let msg = {
-        'source': clientId,
-        'dest': rhid,
-        'tag': "REQUEST",
-        'seq': null,
-        'cmd': {
-            cltid: clientId,
-            opnum: opnum,
-            op: op
-        },
-        'res': null
-    };
-    sock.send(['', JSON.stringify(msg)]);
-    delta = 1000;
-    // Timeout
-    intervalID = setInterval(() => {
-        rhid = eligeManejador(manejadores.filter((manejador) => manejador !== rhid));
-        msg.dest = rhid;
+// Enviar mensajes
+setInterval(() => {
+    ReqCommand(generaOp(clientId));
+}, 10);
+
+/**
+ * Envía una solicitud al servidor
+ * @param {Object} op - Operación a ejecutar
+ */
+function ReqCommand(op) {
+    if (!running) {
+        running = true;
+        rhid = eligeManejador(config.objetos);
+        let msg = {
+            'source': clientId,
+            'dest': rhid,
+            'tag': "REQUEST",
+            'seq': null,
+            'cmd': {
+                cltid: clientId,
+                opnum: opnum,
+                op: op
+            },
+            'res': null
+        };
         sock.send(['', JSON.stringify(msg)]);
-    }, delta);
-} else {
-    return "Abort command";
+        // Timeout cada delta milisegundos
+        intervalID = setInterval(() => {
+            rhid = eligeManejador(manejadores.filter((manejador) => manejador !== rhid));
+            msg.dest = rhid;
+            sock.send(['', JSON.stringify(msg)]);
+        }, delta);
+    } else {
+        return "Abort command";
+    }
 }
+
 
 // Escucha respuestas del objeto
 sock.on('message', function (...args) {

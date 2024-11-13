@@ -2,8 +2,7 @@
     "clientes": 5,
     "replicas": 3,
     "manejadores": 2,
-    "puerto_proxyCM_C": 6969,
-    "puerto_proxyCM_M": 6968,
-    "puerto_proxyMR_M": 6967,
-    "puerto_proxyMR_R": 6965
+    "puerto_proxyCM": 6969,
+    "puerto_proxyMR": 6968,
+    "puerto_secuenciador": 6967
 }

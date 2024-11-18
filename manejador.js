@@ -13,12 +13,12 @@ const ORids = process.argv[3].split(" ");
 // Crear, configurar y conectar el socket con el proxy hacia clientes
 const sockCliente = zmq.socket('dealer');
 sockCliente.identity = RHid;
-sockCliente.connect(`tcp://127.0.0.1:${config.puerto_proxyCM}`);
+sockCliente.connect(`tcp://127.0.0.1:${config.puerto_proxyCM_M}`);
 
 // Crear, configurar y conectar el socket con el proxy hacia replicas
 const sockReplica = zmq.socket('dealer');
 sockReplica.identity = RHid;
-sockReplica.connect(`tcp://127.0.0.1:${conf.puerto_proxyMR}`);
+sockReplica.connect(`tcp://127.0.0.1:${conf.puerto_proxyMR_M}`);
 
 // Crear, configurar y conectar el socket con el secuenciador
 const sockSecuenciador = zmq.socket('dealer');
@@ -139,14 +139,14 @@ function TOBroadcast(cmd) {
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
-    console.log('Shutting down manejador...');
+    console.log('[Manejador] Shutting down...');
     sockCliente.close();
     sockReplica.close();
     sockSecuenciador.close();
 });
 
 process.on('SIGTERM', function () {
-    console.log('Shutting down manejador...');
+    console.log('[Manejador] Shutting down...');
     sockCliente.close();
     sockReplica.close();
     sockSecuenciador.close();

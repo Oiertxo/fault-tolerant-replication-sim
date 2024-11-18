@@ -46,7 +46,7 @@ fs.writeFileSync(FILE_NAME, "", (e) => {
 sock.identity = clientId;
 
 // Conectar con el proxy
-sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM);
+sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
 // Variable auxiliar para medir lo que tarda en recibir respuestas
 // const START_TIME = date.getTime();

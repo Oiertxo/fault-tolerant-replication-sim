@@ -13,36 +13,17 @@ const ORids = process.argv[3].split(" ");
 // Crear, configurar y conectar el socket con el proxy hacia clientes
 const sockCliente = zmq.socket('dealer');
 sockCliente.identity = RHid;
-sockCliente.bind(`tcp://127.0.0.1:${config.puerto_proxyCM}`);
-sockCliente.connect();
+sockCliente.connect(`tcp://127.0.0.1:${config.puerto_proxyCM}`);
 
 // Crear, configurar y conectar el socket con el proxy hacia replicas
 const sockReplica = zmq.socket('dealer');
 sockReplica.identity = RHid;
-sockReplica.bind(`tcp://127.0.0.1:${conf.puerto_proxyMR}`);
-sockReplica.connect();
+sockReplica.connect(`tcp://127.0.0.1:${conf.puerto_proxyMR}`);
 
 // Crear, configurar y conectar el socket con el secuenciador
 const sockSecuenciador = zmq.socket('dealer');
 sockSecuenciador.identity = RHid;
-sockSecuenciador.bind(`tcp://127.0.0.1:${conf.puerto_secuenciador}`);
-sockSecuenciador.connect();
-
-const mensaje = {
-    source,
-    dest,
-    tag,
-    seq,
-    cmd: {
-        cltid,
-        opnum,
-        op: {
-            name,
-            args
-        }
-    },
-    res
-};
+sockSecuenciador.connect(`tcp://127.0.0.1:${conf.puerto_secuenciador}`);
 
 // STATE variables
 const sequenced = [],

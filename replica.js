@@ -20,7 +20,7 @@ sock.identity = process.argv[2];
 const db = new Level(`./bbdd/${process.argv[3]}`);
 
 // Conectar con el proxy
-sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR);
+sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR_R);
 
 // Variables para objetos replicados
 let toexecute = []; // a vector of pairs (rhid, cmd). The first index is 1. Initially, ∀i : toexecute[i] = null;

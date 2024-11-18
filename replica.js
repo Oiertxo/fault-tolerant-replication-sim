@@ -33,13 +33,13 @@ sock.on('message', function (...args) {
 
     // Comprobar formato del mensaje
     if (!message) {
-        console.error("Invalid message format.");
+        console.error("[Replica] Invalid message format.");
         return;
     }
 
     // Descartar mensajes no dirigidos a este objeto o con secuencia incorrecta
     if (message.dest !== process.argv[2] || message.tag !== "TOREQUEST" || message.seq <= 0) {
-        console.error("The message is discarded.");
+        console.error("[Replica] The message is discarded.");
         return;
     }
 

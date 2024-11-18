@@ -39,7 +39,7 @@ for (let i = 0; i < config.manejadores; i++) {
 if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => { });
 fs.writeFileSync(FILE_NAME, "", (e) => {
     if (e) {
-        console.log(`Error al crear fichero: ${e}`);
+        console.log(`[Cliente] Error al crear fichero: ${e}`);
     }
 });
 
@@ -102,7 +102,7 @@ sock.on('message', function (...args) {
         }
         
     } else {
-        console.error("Unexpected message format.");
+        console.error("[Cliente] Unexpected message format.");
     }
 });
 
@@ -112,7 +112,7 @@ sock.on('message', function (...args) {
  */
 function Deliver_ResCommand(message) {
     log_file(FILE_NAME, message, START_TIME);
-    console.log(message.dest, "\x1b[35m: Respuesta recibida de:\x1b[0m", message.source);
+    console.log(message.dest, "[Cliente] Respuesta recibida de:", message.source);
 }
 
 /**
@@ -156,18 +156,18 @@ function log_file(name, msg, start_time) {
 
     fs.writeFileSync(name, line, { flag: "a+" }, (e) => {
         if (e) {
-            console.log(`Error al escribir en fichero: ${e}`);
+            console.log(`[Cliente] Error al escribir en fichero: ${e}`);
         }
     });
 }
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
-    console.log('Closing client socket...');
+    console.log('[Cliente] Closing client socket...');
     sock.close();
 });
 
 process.on('SIGTERM', function () {
-    console.log('Closing client socket...');
+    console.log('[Cliente] Closing client socket...');
     sock.close();
 });

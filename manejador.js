@@ -49,10 +49,10 @@ sockCliente.on("message", (...args) => {
                 }
             }
         } catch (e) {
-            console.log(`Error al parsear mensaje del cliente en el manejador: ${e}`);
+            console.log(`[Manejador] Falied parsing message from client: ${e}`);
         }
     } else {
-        console.error("[Manejador] Unexpected message format from cliente: ", args);
+        console.error("[Manejador] Unexpected message format from client: ", args);
     }
 });
 
@@ -75,10 +75,10 @@ sockSecuenciador.on("message", (...args) => {
             }
 
         } catch (e) {
-            console.log(`Error al parsear mensaje del secuenciador en el manejador: ${e}`);
+            console.log(`[Manejador] Falied parsing message from sequencer: ${e}`);
         }
     } else {
-        console.error("[Manejador] Unexpected message format from cliente: ", args);
+        console.error("[Manejador] Unexpected message format from sequencer: ", args);
     }
 });
 
@@ -97,7 +97,7 @@ sockReplica.on("message", (...args) => {
                 myReplies.delete(m.seq);
             }
         } catch (e) {
-            console.log(`Error al parsear mensaje de la replica en el manejador: ${e}`);
+            console.log(`[Manejador] Falied parsing message from replica: ${e}`);
 
         }
     } else {

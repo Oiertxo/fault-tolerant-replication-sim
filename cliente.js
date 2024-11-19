@@ -63,7 +63,7 @@ setInterval(() => {
 function ReqCommand(op) {
     if (!running) {
         running = true;
-        rhid = eligeManejador(config.objetos);
+        rhid = eligeManejador(manejadores);
         let msg = {
             'source': clientId,
             'dest': rhid,

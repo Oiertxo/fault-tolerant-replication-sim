@@ -5,9 +5,6 @@
 "use strict"
 
 const zmq = require('zeromq');
-// const { TIMEOUT } = require('node:dns');
-
-// const date = new Date();
 
 // Lectura de la configuración
 const config = require('./config.json');
@@ -18,20 +15,17 @@ const sock = zmq.socket('dealer');
 // El primer argumento pasado al script es el id del cliente
 const clientId = process.argv[2];
 
-// Nombre del fichero donde guardar el log
-const FILE_NAME = `./logs/log_${clientId}.txt`;
-
 // Variables
 let running = false;
 let rhid = 0;
 let opnum = 1;
-let delta = 1000; // Usar TIMEOUT
+let delta = 1000;
 
 // Variables auxiliares
 let intervalID = null;
 let manejadores = [];
-for (let i = 0; i < config.manejadores; i++) {
-    manejadores.push(i);
+for (let i = 1; i <= config.manejadores; i++) {
+    manejadores.push('M' + i);
 }
 
 sock.identity = clientId;
@@ -102,7 +96,7 @@ sock.on('message', function (...args) {
  * @param {Object} message - Mensaje a entregar
  */
 function Deliver_ResCommand(message) {
-    log_file(FILE_NAME, message, START_TIME);
+    log_file(message, START_TIME);
 }
 
 /**
@@ -126,7 +120,7 @@ function generaOp(numOp) {
     }
 }
 
-function log_file(name, msg, start_time) {
+function log_file(msg, start_time) {
     const type = msg.tag === "REQUEST" ? "inv" : "res";
     const key = msg.tag === "REQUEST" ? msg.dest : msg.source;
     const value = msg.tag === "REQUEST" ? msg.cmd.op.args : msg.res;

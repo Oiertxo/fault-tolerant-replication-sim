@@ -5,7 +5,6 @@
 "use strict"
 
 const zmq = require('zeromq');
-const fs = require('node:fs');
 // const { TIMEOUT } = require('node:dns');
 
 // const date = new Date();
@@ -35,14 +34,6 @@ for (let i = 0; i < config.manejadores; i++) {
     manejadores.push(i);
 }
 
-// Crear el fichero o vaciarlo si ya existe
-if (!fs.existsSync("./logs")) fs.mkdirSync("logs", () => { });
-fs.writeFileSync(FILE_NAME, "", (e) => {
-    if (e) {
-        console.log(`[Cliente] Error al crear fichero: ${e}`);
-    }
-});
-
 sock.identity = clientId;
 
 // Conectar con el proxy
@@ -52,7 +43,7 @@ sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 // const START_TIME = date.getTime();
 
 // Enviar mensajes
-setInterval(() => {
+const intervalReqCommand = setInterval(() => {
     ReqCommand(generaOp(clientId));
 }, 10);
 
@@ -84,7 +75,7 @@ function ReqCommand(op) {
             sock.send(['', JSON.stringify(msg)]);
         }, delta);
     } else {
-        return "Abort command";
+        console.error("[Cliente]: Abort command");
     }
 }
 
@@ -112,7 +103,6 @@ sock.on('message', function (...args) {
  */
 function Deliver_ResCommand(message) {
     log_file(FILE_NAME, message, START_TIME);
-    console.log(message.dest, "[Cliente] Respuesta recibida de:", message.source);
 }
 
 /**
@@ -153,21 +143,22 @@ function log_file(name, msg, start_time) {
         t: new Date().getTime() - start_time
     };
     const line = JSON.stringify(content) + "\n";
-
-    fs.writeFileSync(name, line, { flag: "a+" }, (e) => {
-        if (e) {
-            console.log(`[Cliente] Error al escribir en fichero: ${e}`);
-        }
-    });
+    console.log(line);
 }
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
     console.log('[Cliente] Closing client socket...');
+    // clearInterval(intervalID);
+    clearInterval(intervalReqCommand);
+    // empty socket queue
+    sock.
     sock.close();
 });
 
 process.on('SIGTERM', function () {
     console.log('[Cliente] Closing client socket...');
+    clearInterval(intervalID);
+    clearInterval(intervalReqCommand);
     sock.close();
 });

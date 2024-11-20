@@ -30,6 +30,7 @@ let expectseq = 1;  // a positive integer. It indicates the first null position 
 // Función para manejar mensajes recibidos
 sock.on('message', function (...args) {
     const message = JSON.parse(args[1].toString());
+    console.log(`[Replica] Received message: ${JSON.stringify(message)}`);
 
     // Comprobar formato del mensaje
     if (!message) {
@@ -38,7 +39,7 @@ sock.on('message', function (...args) {
     }
 
     // Descartar mensajes no dirigidos a este objeto o con secuencia incorrecta
-    if (message.dest !== process.argv[2] || message.tag !== "TOREQUEST" || message.seq <= 0) {
+    if (message.dest !== sock.identity || message.tag !== "TOREQUEST" || message.seq <= 0) {
         console.error("[Replica] The message is discarded.");
         return;
     }

@@ -35,7 +35,7 @@ const sequenced = [],
     myCommands = new Set(),
     myReplies = new Set();
 let localSeq = 1,
-    lastServedSeq = 0;
+    lastServedSeq = 1;
 
 //ACTIONS
 sockCliente.on("message", (...args) => {

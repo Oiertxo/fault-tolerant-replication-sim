@@ -17,7 +17,7 @@ const sock = zmq.socket('dealer');
 sock.identity = process.argv[2];
 
 // El segundo argumento es el nombre de la base de datos del objeto
-const db = new Level(`./bbdd/${process.argv[3]}`);
+const db = new Level(`./dbs/${process.argv[3]}`);
 
 // Conectar con el proxy
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR_R);

@@ -2,6 +2,7 @@
 
 # Limpiar logs y bases de datos
 rm logs/ -r;
+rm dbs/ -r;
 
 # Crear directorios
 mkdir logs;

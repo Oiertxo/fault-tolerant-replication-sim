@@ -75,7 +75,7 @@ function ReqCommand(op) {
             sock.send(['', JSON.stringify(msg)]);
         }, delta);
     } else {
-        console.error("[Cliente]: Abort command");
+        return "Abort command";
     }
 }
 
@@ -149,10 +149,8 @@ function log_file(name, msg, start_time) {
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
     console.log('[Cliente] Closing client socket...');
-    // clearInterval(intervalID);
+    clearInterval(intervalID);
     clearInterval(intervalReqCommand);
-    // empty socket queue
-    sock.
     sock.close();
 });
 

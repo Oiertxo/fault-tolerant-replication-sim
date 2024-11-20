@@ -73,3 +73,28 @@ done
 
 # Dar tiempo a que los clientes se inicialicen
 sleep .1;
+
+# Esperar a que se entreguen varios mensajes
+sleep 1;
+
+# Matar procesos
+kill $proxyCM;
+kill $proxyMR;
+kill $secuenciador;
+
+for i in $(seq 1 $numManejadores)
+do
+    kill ${manejadores[$i]};
+done
+
+for i in $(seq 1 $numReplicas)
+do
+    kill ${replicas[$i]};
+done
+
+for i in $(seq 1 $numClientes)
+do
+    kill ${clientes[$i]};
+done
+sleep .5
+echo "Finalizado";

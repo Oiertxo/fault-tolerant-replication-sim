@@ -2,7 +2,6 @@
 
 # Limpiar logs y bases de datos
 rm logs/ -r;
-rm dbs/ -r;
 
 # Crear directorios
 mkdir logs;
@@ -64,7 +63,7 @@ declare -a clientes
 
 for i in $(seq 1 $numClientes)
 do
-    node cliente.js C$i &
+    node cliente.js C$i & > logs/C$i.log
     clientes[$i]=$!
 done
 

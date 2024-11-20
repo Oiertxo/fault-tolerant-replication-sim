@@ -27,7 +27,8 @@ secuenciador=$!
 sleep .1;
 
 # Ejecutar manejadores
-numManejadores=$(jq -r '.manejadores' config.json)
+numManejadores=$(grep '"manejadores"' config.json | awk -F': ' '{print $2}' | tr -d ', ')
+
 
 # Crear un array para almacenar los PIDs de cada manejador
 declare -a manejadores
@@ -42,7 +43,8 @@ done
 sleep .1;
 
 # Ejecutar replicas
-numReplicas=$(jq -r '.replicas' config.json)
+numReplicas=$(grep '"replicas"' config.json | awk -F': ' '{print $2}' | tr -d ', ')
+
 
 # Crear un array para almacenar los PIDs de cada replica
 declare -a replicas
@@ -57,7 +59,8 @@ done
 sleep .1;
 
 # Ejecutar clientes
-numClientes=$(jq -r '.clientes' config.json)
+numClientes=$(grep '"clientes"' config.json | awk -F': ' '{print $2}' | tr -d ', ')
+
 
 # Crear un array para almacenar los PIDs de cada cliente
 declare -a clientes

@@ -1,19 +1,23 @@
 /**
- * node manejador.js id_manejador "conjunto de ids de replicas separados por espacios"
+ * node manejador.js id_manejador
  */
 "use strict"
 const conf = require("./config.json"),
-    zmq = require('zeromq'),
-    config = require('./config.json');
+    zmq = require('zeromq');
 
 const RHid = process.argv[2];
-const ORids = process.argv[3].split(" ");
 
+const nORs = conf.replicas;
+const ORids = [];
+
+for (let i = 0; i < nORs; i++) {
+    ORids[i] = `R${i}`;
+}
 
 // Crear, configurar y conectar el socket con el proxy hacia clientes
 const sockCliente = zmq.socket('dealer');
 sockCliente.identity = RHid;
-sockCliente.connect(`tcp://127.0.0.1:${config.puerto_proxyCM_M}`);
+sockCliente.connect(`tcp://127.0.0.1:${conf.puerto_proxyCM_M}`);
 
 // Crear, configurar y conectar el socket con el proxy hacia replicas
 const sockReplica = zmq.socket('dealer');
@@ -41,7 +45,7 @@ sockCliente.on("message", (...args) => {
                 let seq = sequenced.indexOf(msg.cmd);
                 if (seq === -1) {       // El comando no está secuenciado:
                     TOBroadcast({ RHid: RHid, cmd: msg.cmd });      // Secuenciar
-                    myCommands.add(msg.cmd);
+                    myCommands.add(JSON.stringify(msg.cmd));
                 } else { //El comando ya está secuenciado
                     TransmitToReplicas(seq, msg.cmd, lastServedSeq);
                     myReplies.add(seq);
@@ -59,6 +63,7 @@ sockCliente.on("message", (...args) => {
 sockSecuenciador.on("message", (...args) => {
     if (args[1]) {
         try {
+
             const m = JSON.parse(args[1]);  // m = {m.rhid, m.cmd}
             let seq = sequenced.indexOf(m.cmd);
             if (seq === -1) {       // No estaba secuenciado aun
@@ -67,7 +72,7 @@ sockSecuenciador.on("message", (...args) => {
                 localSeq++;
             }
 
-            if (myCommands.has(m.cmd)) {        // Si lo ha emitido este manejador
+            if (myCommands.has(JSON.stringify(m.cmd))) {        // Si lo ha emitido este manejador
                 TransmitToReplicas(seq, m.cmd, lastServedSeq);
                 myCommands.delete(m.cmd);
                 myReplies.add(m.cmd);
@@ -86,6 +91,7 @@ sockReplica.on("message", (...args) => {
     if (args[1]) {
         try {
             const m = JSON.parse(args[1]);
+
             if (m.dest === RHid && m.tag === "TOREPLY" && myReplies.has(m.seq)) {
                 const new_m = {
                     ...m,
@@ -118,8 +124,10 @@ function TransmitToReplicas(seq, cmd, lastServedSeq) {
                 res: null
             };
             sockReplica.send(['', JSON.stringify(msg)]);
+
         });
     }
+
     ORids.forEach(ORid => {
         const msg = {
             source: RHid,

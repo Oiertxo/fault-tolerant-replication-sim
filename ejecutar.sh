@@ -67,7 +67,7 @@ declare -a clientes
 
 for i in $(seq 1 $numClientes)
 do
-    node cliente.js C$i & > logs/C$i.log
+    node cliente.js C$i > logs/C$i.log &  
     clientes[$i]=$!
 done
 
@@ -85,16 +85,19 @@ kill $secuenciador;
 for i in $(seq 1 $numManejadores)
 do
     kill ${manejadores[$i]};
-done
+done;
+sleep .1;
 
 for i in $(seq 1 $numReplicas)
 do
     kill ${replicas[$i]};
-done
+done;
+sleep .1;
 
 for i in $(seq 1 $numClientes)
 do
     kill ${clientes[$i]};
-done
-sleep .5
+done;
+sleep .1;
+
 echo "Finalizado";

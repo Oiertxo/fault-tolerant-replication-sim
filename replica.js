@@ -44,19 +44,17 @@ sock.on('message', function (...args) {
     }
 
     // Comprobar si el mensaje es el esperado
+
     if (message.seq === expectseq) {
-        toexecute[expectseq] = { source: message.source, cmd: message.cmd };
+        toexecute[expectseq] = { rhid: message.source, cmd: message.cmd };
 
         // Ejecutar los comandos pendientes
-        while (toexecute[expectseq] !== null) {
+        while (toexecute[expectseq] !== null && toexecute[executed] !== undefined) {
             // Obtener el comando a ejecutar
-            let { rhid, cmd } = toexecute[expectseq];
+            const rhid = toexecute[expectseq].rhid, cmd = toexecute[expectseq].cmd;
 
             // Ejecutar el comando
-            let res = Execute(cmd);
-
-            // Añadir comando a executed
-            executed[expectseq] = { cmd: cmd, res: resp_message.res };
+            const res = Execute(cmd);
 
             // Preparar el mensaje de respuesta
             const resp_message = {
@@ -68,8 +66,12 @@ sock.on('message', function (...args) {
                 res: res,
             };
 
+            // Añadir comando a executed
+            executed[expectseq] = { cmd: cmd, res: resp_message.res };
+
             // Enviar la respuesta
             sock.send(['', JSON.stringify(resp_message)]);
+
 
             // Actualizar expectseq
             expectseq++;
@@ -128,11 +130,11 @@ function Execute(cmd) {
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
-    console.log('Shutting down server...');
+    console.log('[Replica] Shutting down server...');
     sock.close();
 });
 
 process.on('SIGTERM', function () {
-    console.log('Shutting down server...');
+    console.log('[Replica] Shutting down server...');
     sock.close();
 });

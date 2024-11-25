@@ -28,9 +28,8 @@ let executed = [];  // a vector of pairs (cmd, res). The first index is 1. Initi
 let expectseq = 1;  // a positive integer. It indicates the first null position in toexecute. Initially, expectseq = 1
 
 // Función para manejar mensajes recibidos
-sock.on('message', function (...args) {
+sock.on('message', async function (...args) {
     const message = JSON.parse(args[1].toString());
-    console.log(`[Replica] Received message: ${JSON.stringify(message)}`);
 
     // Comprobar formato del mensaje
     if (!message) {
@@ -50,12 +49,12 @@ sock.on('message', function (...args) {
         toexecute[expectseq] = { rhid: message.source, cmd: message.cmd };
 
         // Ejecutar los comandos pendientes
-        while (toexecute[expectseq] !== null && toexecute[executed] !== undefined) {
+        while (toexecute[expectseq] !== null && toexecute[expectseq] !== undefined) {
             // Obtener el comando a ejecutar
             const rhid = toexecute[expectseq].rhid, cmd = toexecute[expectseq].cmd;
 
             // Ejecutar el comando
-            const res = Execute(cmd);
+            const res = await Execute(cmd);
 
             // Preparar el mensaje de respuesta
             const resp_message = {
@@ -106,26 +105,40 @@ sock.on('message', function (...args) {
 });
 
 // Función para ejecutar comandos
-function Execute(cmd) {
-    let res = null;
+async function Execute(cmd) {
+    let res;
 
     switch (cmd.op.name) {
         case "put":
             const [key, value] = cmd.op.args.split(" ");
-            db.put(key, value, (err) => {
-                res = err ? `Error: ${err.message}` : 'OK';
-            });
+            await db.put(key, value)
+                .then(() => {
+                    res = 'OK';
+                }).catch(err => {
+                    console.error("[Replica] Error on Execute-get: ", err);
+                    res = `Errors in database: ${err}`;
+                });
             break;
+
         case "get":
-            db.get(cmd.op.args, (err, value) => {
-                res = err ? `Error: ${err.message}` : value;
-            });
+            await db.get(cmd.op.args)
+                .then(dbResponse => {
+                    res = dbResponse;
+                }).catch(err => {
+                    if (err.code === 'LEVEL_NOT_FOUND') {
+                        res = `Error: Not Found`;
+                    }
+                    else {
+                        console.error("[Replica] Error on Execute-put: ", err)
+                        res = `Error in database: ${err}`;
+                    }
+                });
             break;
+
         default:
             res = `Error: unsupported operation: ${cmd.op.name}`;
             break;
     }
-
     return res;
 }
 

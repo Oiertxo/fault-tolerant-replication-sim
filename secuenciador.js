@@ -24,15 +24,20 @@ router.bind(routerIp, function (err) {
     console.log(`[Secuenciador] Router bound to ${routerIp}`);
 });
 
+let localSeq = 1;
+
 router.on('message', function (...args) {
     const [id, , messageBuffer] = args;
 
     try {
         const message = JSON.parse(messageBuffer.toString());
+        message.seq = localSeq;
+
         for (let RHid of RHids) {
             router.send([RHid, "", JSON.stringify(message)]);
         }
 
+        localSeq++;
     } catch (err) {
         console.error('[Secuenciador] Failed to parse JSON from client:', err);
     }

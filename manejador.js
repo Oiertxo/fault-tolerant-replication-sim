@@ -75,8 +75,8 @@ sockSecuenciador.on("message", (...args) => {
 
             if (myCommands.has(JSON.stringify(m.cmd))) {        // Si lo ha emitido este manejador
                 TransmitToReplicas(seq, m.cmd, lastServedSeq);
-                myCommands.delete(m.cmd);
-                myReplies.add(m.cmd);
+                myCommands.delete(JSON.stringify(m.cmd));
+                myReplies.add(m.seq);
                 lastServedSeq = Math.max(seq, lastServedSeq);
             }
 

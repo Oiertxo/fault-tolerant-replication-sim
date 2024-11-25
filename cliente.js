@@ -40,6 +40,18 @@ sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 const intervalReqCommand = setInterval(() => {
     ReqCommand(generaOp(clientId));
 }, 10);
+const msg = {
+    'source': null,
+    'dest': null,
+    'tag': null,
+    'seq': null,
+    'cmd': {
+        cltid: null,
+        opnum: null,
+        op: null
+    },
+    'res': null
+};
 
 /**
  * Envía una solicitud al servidor
@@ -49,18 +61,14 @@ function ReqCommand(op) {
     if (!running) {
         running = true;
         rhid = eligeManejador(manejadores);
-        let msg = {
-            'source': clientId,
-            'dest': rhid,
-            'tag': "REQUEST",
-            'seq': null,
-            'cmd': {
-                cltid: clientId,
-                opnum: opnum,
-                op: op
-            },
-            'res': null
-        };
+        msg.source = clientId;
+        msg.dest = rhid;
+        msg.tag = "REQUEST";
+        msg.seq = null
+        msg.cmd.cltid = clientId;
+        msg.cmd.opnum = opnum;
+        msg.cmd.op = op;
+        msg.res = null;
         sock.send(['', JSON.stringify(msg)]);
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
@@ -79,13 +87,15 @@ sock.on('message', function (...args) {
     // Asume que el segundo argumento es el mensaje
     if (args[1]) {
         const message = JSON.parse(args[1])
-        if (message.dest === clientId && message.tag === "REPLY" && message.seq > 0 && message.cmd === cmd) {
+        console.log("[Cliente] Received:", message);
+
+        if (message.dest === clientId && message.tag === "REPLY" && message.seq > 0 && message.cmd === msg.cmd) {
             clearInterval(intervalID);
             running = false;
             opnum++;
             Deliver_ResCommand(message);
         }
-        
+
     } else {
         console.error("[Cliente] Unexpected message format.");
     }

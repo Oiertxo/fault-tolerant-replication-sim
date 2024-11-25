@@ -75,7 +75,7 @@ done
 sleep .1;
 
 # Esperar a que se entreguen varios mensajes
-sleep 1;
+sleep 5;
 
 # Matar procesos
 kill $proxyCM;

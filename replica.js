@@ -115,8 +115,8 @@ async function Execute(cmd) {
                 .then(() => {
                     res = 'OK';
                 }).catch(err => {
-                    console.error("[Replica] Error on Execute-get: ", err);
-                    res = `Errors in database: ${err}`;
+                    console.error("[Replica] Error on Execute-put: ", err);
+                    res = `Error in database: ${err}`;
                 });
             break;
 
@@ -129,7 +129,7 @@ async function Execute(cmd) {
                         res = `Error: Not Found`;
                     }
                     else {
-                        console.error("[Replica] Error on Execute-put: ", err)
+                        console.error("[Replica] Error on Execute-get: ", err)
                         res = `Error in database: ${err}`;
                     }
                 });

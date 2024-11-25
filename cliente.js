@@ -20,7 +20,6 @@ let running = false;
 let rhid = 0;
 let opnum = 1;
 let delta = 100;
-let START_TIME = new Date().getTime();
 
 // Variables auxiliares
 let intervalID = null;
@@ -35,7 +34,7 @@ sock.identity = clientId;
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
 // Variable auxiliar para medir lo que tarda en recibir respuestas
-// const START_TIME = date.getTime();
+const START_TIME = date.getTime();
 
 // Enviar mensajes
 const intervalReqCommand = setInterval(() => {
@@ -89,7 +88,7 @@ sock.on('message', function (...args) {
     if (args[1]) {
         const message = JSON.parse(args[1])
         console.log("[Cliente] Received: ", message);
-        if (message.dest === clientId && message.tag === "REPLY" && 
+        if (message.dest === clientId && message.tag === "REPLY" &&
             message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)) {
             clearInterval(intervalID);
             running = false;

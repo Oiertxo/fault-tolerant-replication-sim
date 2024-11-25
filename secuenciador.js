@@ -10,8 +10,8 @@ const zmq = require('zeromq'),
 const nRHs = conf.manejadores,
     RHids = [];
 
-for (let i = 0; i < nRHs; i++) {
-    RHids[i] = `M${i}`;
+for (let i = 1; i <= nRHs; i++) {
+    RHids[i - 1] = `M${i}`;
 }
 
 // Direcciones para los sockets de los clientes

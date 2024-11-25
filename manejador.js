@@ -10,10 +10,9 @@ const RHid = process.argv[2];
 const nORs = conf.replicas;
 const ORids = [];
 
-for (let i = 1; i < nORs + 1; i++) {
-    ORids[i] = `R${i}`;
+for (let i = 1; i <= nORs; i++) {
+    ORids[i - 1] = `R${i}`;
 }
-
 
 // Crear, configurar y conectar el socket con el proxy hacia clientes
 const sockCliente = zmq.socket('dealer');

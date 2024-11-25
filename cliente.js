@@ -34,7 +34,7 @@ sock.identity = clientId;
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
 // Variable auxiliar para medir lo que tarda en recibir respuestas
-const START_TIME = date.getTime();
+const START_TIME = new Date().getTime();
 
 // Enviar mensajes
 const intervalReqCommand = setInterval(() => {
@@ -156,6 +156,7 @@ process.on('SIGINT', function () {
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);
     sock.close();
+    process.exit();
 });
 
 process.on('SIGTERM', function () {
@@ -163,4 +164,5 @@ process.on('SIGTERM', function () {
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);
     sock.close();
+    process.exit();
 });

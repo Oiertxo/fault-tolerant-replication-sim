@@ -61,6 +61,7 @@ function ReqCommand(op) {
     if (!running) {
         running = true;
         rhid = eligeManejador(manejadores);
+
         msg.source = clientId;
         msg.dest = rhid;
         msg.tag = "REQUEST";
@@ -69,7 +70,9 @@ function ReqCommand(op) {
         msg.cmd.opnum = opnum;
         msg.cmd.op = op;
         msg.res = null;
+
         sock.send(['', JSON.stringify(msg)]);
+
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
             rhid = eligeManejador(manejadores.filter((manejador) => manejador !== rhid));

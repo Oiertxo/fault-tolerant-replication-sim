@@ -19,7 +19,8 @@ const clientId = process.argv[2];
 let running = false;
 let rhid = 0;
 let opnum = 1;
-let delta = 1000;
+let delta = 100;
+let START_TIME = new Date().getTime();
 
 // Variables auxiliares
 let intervalID = null;
@@ -87,9 +88,9 @@ sock.on('message', function (...args) {
     // Asume que el segundo argumento es el mensaje
     if (args[1]) {
         const message = JSON.parse(args[1])
-        console.log("[Cliente] Received:", message);
-
-        if (message.dest === clientId && message.tag === "REPLY" && message.seq > 0 && message.cmd === msg.cmd) {
+        console.log("[Cliente] Received: ", message);
+        if (message.dest === clientId && message.tag === "REPLY" && 
+            message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)) {
             clearInterval(intervalID);
             running = false;
             opnum++;
@@ -139,7 +140,7 @@ function log_file(msg, start_time) {
 
     const content = {
         tipo_e: type,
-        op: cmd.op.name,
+        op: msg.cmd.op.name,
         clave: key,
         valor: value,
         n: n,

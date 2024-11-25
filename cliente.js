@@ -89,7 +89,8 @@ sock.on('message', function (...args) {
         const message = JSON.parse(args[1])
         console.log("[Cliente] Received:", message);
 
-        if (message.dest === clientId && message.tag === "REPLY" && message.seq > 0 && message.cmd === msg.cmd) {
+        if (message.dest === clientId && message.tag === "REPLY" &&
+            message.seq > 0 && message.cmd === msg.cmd) {
             clearInterval(intervalID);
             running = false;
             opnum++;

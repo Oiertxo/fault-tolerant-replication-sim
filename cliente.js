@@ -1,7 +1,7 @@
 /**
  * EJECUCION
  * node cliente.js nombre_cliente
- */
+*/
 "use strict"
 
 const zmq = require('zeromq');
@@ -39,7 +39,8 @@ const START_TIME = new Date().getTime();
 // Enviar mensajes
 const intervalReqCommand = setInterval(() => {
     ReqCommand(generaOp(clientId));
-}, 10);
+}, 30);
+
 const msg = {
     'source': null,
     'dest': null,
@@ -72,6 +73,7 @@ function ReqCommand(op) {
         msg.res = null;
 
         sock.send(['', JSON.stringify(msg)]);
+        opnum++;
 
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
@@ -89,14 +91,12 @@ function ReqCommand(op) {
 sock.on('message', function (...args) {
     // Asume que el segundo argumento es el mensaje
     if (args[1]) {
-        const message = JSON.parse(args[1])
-        console.log("[Cliente] Received: ", message);
+        const message = JSON.parse(args[1]);
         if (message.dest === clientId && message.tag === "REPLY" &&
             message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)) {
             clearInterval(intervalID);
-            running = false;
-            opnum++;
             Deliver_ResCommand(message);
+            running = false;
         }
 
     } else {
@@ -149,7 +149,7 @@ function log_file(msg, start_time) {
         id: id,
         t: new Date().getTime() - start_time
     };
-    const line = JSON.stringify(content) + "\n";
+    const line = JSON.stringify(content);
     console.log(line);
 }
 

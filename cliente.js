@@ -19,6 +19,7 @@ const clientId = process.argv[2];
 let running = false;
 let rhid = 0;
 let opnum = 1;
+let correctOps = 0;     // Variable para medir la productividad del cliente
 let delta = 100;
 
 // Variables auxiliares
@@ -38,8 +39,8 @@ const START_TIME = new Date().getTime();
 
 // Enviar mensajes
 const intervalReqCommand = setInterval(() => {
-    ReqCommand(generaOp(clientId));
-}, 30);
+    ReqCommand(generaOp(opnum));
+}, 10);
 
 const msg = {
     'source': null,
@@ -73,7 +74,6 @@ function ReqCommand(op) {
         msg.res = null;
 
         sock.send(['', JSON.stringify(msg)]);
-        opnum++;
 
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
@@ -93,9 +93,11 @@ sock.on('message', function (...args) {
     if (args[1]) {
         const message = JSON.parse(args[1]);
         if (message.dest === clientId && message.tag === "REPLY" &&
-            message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)) {
+            message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)
+            && opnum === message.cmd.opnum) {
             clearInterval(intervalID);
             Deliver_ResCommand(message);
+            opnum++;
             running = false;
         }
 
@@ -110,6 +112,7 @@ sock.on('message', function (...args) {
  */
 function Deliver_ResCommand(message) {
     log_file(message, START_TIME);
+    correctOps++;
 }
 
 /**
@@ -123,7 +126,7 @@ function eligeManejador(manejadores) {
 
 /**
  * Elige aleatoriamnete entre hacer un get o un set de un valor
- * 
+ * @param {Number} numOp - Número de la operación a generar
  */
 function generaOp(numOp) {
     const randAux = Math.random();
@@ -156,6 +159,8 @@ function log_file(msg, start_time) {
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
     console.log('[Cliente] Closing client socket...');
+    const prod = correctOps / ((new Date().getTime() - START_TIME) / 1000)
+    console.log(`Productividad del cliente ${clientId}: ${Math.round(prod * 100) / 100} msgs/s`);
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);
     sock.close();
@@ -164,6 +169,8 @@ process.on('SIGINT', function () {
 
 process.on('SIGTERM', function () {
     console.log('[Cliente] Closing client socket...');
+    const prod = correctOps / ((new Date().getTime() - START_TIME) / 1000)
+    console.log(`Productividad del cliente ${clientId}: ${Math.round(prod * 100) / 100} msgs/s`);
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);
     sock.close();

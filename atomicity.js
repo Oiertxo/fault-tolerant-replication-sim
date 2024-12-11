@@ -1,8 +1,8 @@
 "use strict";
 const { read } = require('fs');
 
- // strict mode, does not allow undeclared variables
-if (process.argv.length < 3){
+// strict mode, does not allow undeclared variables
+if (process.argv.length < 3) {
     console.error("ERROR: Por favor, ejecutame con un primer argumento que especifique el fichero de logs con el que quieres trabajar.");
     return;
 }
@@ -51,7 +51,7 @@ lineReader.on('line', function (line) {
 
         // Assing finish time for zone
         zones[event.valor].f = Math.min(zones[event.valor].f, writes[event.valor].f)
-        
+
         // Deletes every written value that is previous to the current written value
         for (let key in writes) {
             if (writes[key].f < writes[event.valor].s && alphas[key] == null) {
@@ -86,7 +86,7 @@ lineReader.on('line', function (line) {
             zones[event.valor].f = Math.min(zoneF, event.t);
 
             reads_sTime.delete(id);
-            
+
             for (let key in zones) {
                 if (zones[key].f != Infinity && zones_conflict(event.valor)) {
                     result = "bad, zones conflict";
@@ -125,7 +125,7 @@ function zones_conflict(valor) {
 
         if (zones[key].f != Infinity) {
             let z2forward = zones[key].f < zones[key].s; // Verifica si la zona 2 es forward
-           
+
             if (z1forward && z2forward) {
                 if (zones[valor].s > zones[key].f && zones[key].s > zones[valor].f) {
                     console.log('• Two forward zones overlap [Z1-' + key + '][Z1.f=' + zones[key].f + ', Z1.s=' + zones[key].s + '] and [Z2-' + valor + '][Z1.f=' + zones[valor].f + ', Z1.s=' + zones[valor].s + ']');

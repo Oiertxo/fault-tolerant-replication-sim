@@ -110,10 +110,10 @@ async function Execute(cmd) {
 
     switch (cmd.op.name) {
         case "put":
-            const [key, value] = cmd.op.args.split(" ");
-            await db.put(key, value)
+            const value = cmd.op.args;
+            await db.put("pruebas", value)
                 .then(() => {
-                    res = 'OK';
+                    res = value;
                 }).catch(err => {
                     console.error("[Replica] Error on Execute-put: ", err);
                     res = `Error in database: ${err}`;
@@ -121,12 +121,12 @@ async function Execute(cmd) {
             break;
 
         case "get":
-            await db.get(cmd.op.args)
+            await db.get("pruebas")
                 .then(dbResponse => {
                     res = dbResponse;
                 }).catch(err => {
                     if (err.code === 'LEVEL_NOT_FOUND') {
-                        res = `Error: Not Found`;
+                        res = null;
                     }
                     else {
                         console.error("[Replica] Error on Execute-get: ", err)

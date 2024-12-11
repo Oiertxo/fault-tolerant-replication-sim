@@ -1,5 +1,5 @@
 {
-    "clientes": 5,
+    "clientes": 3,
     "replicas": 1,
     "manejadores": 2,
     "puerto_proxyCM_C": 6969,

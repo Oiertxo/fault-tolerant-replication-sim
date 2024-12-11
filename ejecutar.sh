@@ -71,11 +71,8 @@ do
     clientes[$i]=$!
 done
 
-# Dar tiempo a que los clientes se inicialicen
-sleep .1;
-
 # Esperar a que se entreguen varios mensajes
-sleep .5;
+sleep .15;
 
 # Matar procesos
 kill $proxyCM;

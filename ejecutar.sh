@@ -75,7 +75,7 @@ done
 sleep .1;
 
 # Esperar a que se entreguen varios mensajes
-sleep 3;
+sleep .5;
 
 # Matar procesos
 kill $proxyCM;
@@ -101,3 +101,9 @@ done;
 sleep .1;
 
 echo "Finalizado";
+
+node unify_logs.js > logs/unified_logs.log;
+
+sleep .1;
+
+node atomicity.js logs/unified_logs.log > logs/atomicity.log;

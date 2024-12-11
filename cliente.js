@@ -35,7 +35,7 @@ sock.identity = clientId;
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 
 // Variable auxiliar para medir lo que tarda en recibir respuestas
-const START_TIME = new Date().getTime();
+const START_TIME = process.hrtime();
 
 // Enviar mensajes
 const intervalReqCommand = setInterval(() => {
@@ -75,6 +75,8 @@ function ReqCommand(op) {
 
         sock.send(['', JSON.stringify(msg)]);
 
+        log_file(msg, START_TIME);
+
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
             rhid = eligeManejador(manejadores.filter((manejador) => manejador !== rhid));
@@ -111,7 +113,7 @@ sock.on('message', function (...args) {
  * @param {Object} message - Mensaje a entregar
  */
 function Deliver_ResCommand(message) {
-    log_file(message, START_TIME);
+    log_file(message);
     correctOps++;
 }
 
@@ -136,12 +138,14 @@ function generaOp(numOp) {
     }
 }
 
-function log_file(msg, start_time) {
+function log_file(msg) {
     const type = msg.tag === "REQUEST" ? "inv" : "res";
     const key = msg.tag === "REQUEST" ? msg.dest : msg.source;
     const value = msg.tag === "REQUEST" ? msg.cmd.op.args : msg.res;
     const n = msg.cmd.opnum;
     const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
+
+    const END_TIME = process.hrtime(START_TIME);
 
     const content = {
         tipo_e: type,
@@ -150,7 +154,7 @@ function log_file(msg, start_time) {
         valor: value,
         n: n,
         id: id,
-        t: new Date().getTime() - start_time
+        t: END_TIME[0] * 1e9 + END_TIME[1]
     };
     const line = JSON.stringify(content);
     console.log(line);
@@ -158,8 +162,8 @@ function log_file(msg, start_time) {
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
-    console.log('[Cliente] Closing client socket...');
-    const prod = correctOps / ((new Date().getTime() - START_TIME) / 1000)
+    const END_TIME = process.hrtime(START_TIME);
+    const prod = correctOps / ((END_TIME[0] * 1e9 + END_TIME[1]) / 1e9);
     console.log(`Productividad del cliente ${clientId}: ${Math.round(prod * 100) / 100} msgs/s`);
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);
@@ -168,8 +172,8 @@ process.on('SIGINT', function () {
 });
 
 process.on('SIGTERM', function () {
-    console.log('[Cliente] Closing client socket...');
-    const prod = correctOps / ((new Date().getTime() - START_TIME) / 1000)
+    const END_TIME = process.hrtime(START_TIME);
+    const prod = correctOps / ((END_TIME[0] * 1e9 + END_TIME[1]) / 1e9);
     console.log(`Productividad del cliente ${clientId}: ${Math.round(prod * 100) / 100} msgs/s`);
     clearInterval(intervalID);
     clearInterval(intervalReqCommand);

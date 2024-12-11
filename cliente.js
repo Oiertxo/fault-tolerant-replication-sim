@@ -140,8 +140,7 @@ function generaOp(numOp) {
 
 function log_file(msg) {
     const type = msg.tag === "REQUEST" ? "inv" : "res";
-    const key = msg.tag === "REQUEST" ? msg.dest : msg.source;
-    const value = msg.tag === "REQUEST" ? msg.cmd.op.args : msg.res;
+    const value = msg.res;
     const n = msg.cmd.opnum;
     const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
 
@@ -150,7 +149,7 @@ function log_file(msg) {
     const content = {
         tipo_e: type,
         op: msg.cmd.op.name,
-        clave: key,
+        clave: 'r1',
         valor: value,
         n: n,
         id: id,

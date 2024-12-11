@@ -149,7 +149,7 @@ function log_file(msg) {
     const content = {
         tipo_e: type,
         op: msg.cmd.op.name,
-        clave: 'r1',
+        clave: 'pruebas',
         valor: value,
         n: n,
         id: id,

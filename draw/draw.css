@@ -1,0 +1,48 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+#fichero {
+    width: 100%;
+    height: 5%;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#draw {
+    width: 100%;
+    height: 95%;
+}
+
+#draw canvas {
+    width: 100%;
+    height: 100%;
+}
+
+#log {
+    position: absolute;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    user-select: none;
+}
+
+h3 {
+    margin: 0;
+}
+
+h3 span {
+    font-size: 0.6em;
+}

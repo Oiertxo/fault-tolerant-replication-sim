@@ -75,7 +75,7 @@ function ReqCommand(op) {
 
         sock.send(['', JSON.stringify(msg)]);
 
-        log_file(msg, START_TIME);
+        //log_file(msg, START_TIME);
 
         // Timeout cada delta milisegundos
         intervalID = setInterval(() => {
@@ -113,7 +113,8 @@ sock.on('message', function (...args) {
  * @param {Object} message - Mensaje a entregar
  */
 function Deliver_ResCommand(message) {
-    log_file(message);
+    log_file(message, true);
+    log_file(message, false);
     correctOps++;
 }
 
@@ -138,11 +139,14 @@ function generaOp(numOp) {
     }
 }
 
-function log_file(msg) {
-    const type = msg.tag === "REQUEST" ? "inv" : "res";
-    const value = msg.tag === "REQUEST" && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
+function log_file(msg, envio) {
+    // const type = msg.tag === "REQUEST" ? "inv" : "res";
+    const type = envio ? "inv" : "res";
+    // const value = msg.tag === "REQUEST" && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
+    const value = envio && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
     const n = msg.cmd.opnum;
-    const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
+    // const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
+    const id = envio ? msg.source : msg.dest;
 
     const END_TIME = process.hrtime(START_TIME);
 
@@ -153,7 +157,7 @@ function log_file(msg) {
         valor: value,
         n: n,
         id: id,
-        t: END_TIME[0] * 1e9 + END_TIME[1]
+        t: envio ? msg.tiempo_inicio : msg.tiempo_final//END_TIME[0] * 1e9 + END_TIME[1]
     };
     const line = JSON.stringify(content);
     console.log(line);

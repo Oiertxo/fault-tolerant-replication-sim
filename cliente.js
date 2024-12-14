@@ -37,11 +37,6 @@ sock.connect("tcp://127.0.0.1:" + config.puerto_proxyCM_C);
 // Variable auxiliar para medir lo que tarda en recibir respuestas
 const START_TIME = process.hrtime();
 
-// Enviar mensajes
-const intervalReqCommand = setInterval(() => {
-    ReqCommand(generaOp(opnum));
-}, 10);
-
 const msg = {
     'source': null,
     'dest': null,
@@ -54,6 +49,11 @@ const msg = {
     },
     'res': null
 };
+
+// Enviar mensajes
+const intervalReqCommand = setInterval(() => {
+    ReqCommand(generaOp(opnum));
+}, 10);
 
 /**
  * Envía una solicitud al servidor
@@ -88,17 +88,18 @@ function ReqCommand(op) {
     }
 }
 
-
 // Escucha respuestas del objeto
 sock.on('message', function (...args) {
     // Asume que el segundo argumento es el mensaje
     if (args[1]) {
-        const message = JSON.parse(args[1]);
-        if (message.dest === clientId && message.tag === "REPLY" &&
-            message.seq > 0 && JSON.stringify(message.cmd) === JSON.stringify(msg.cmd)
-            && opnum === message.cmd.opnum) {
+        const response = JSON.parse(args[1]);
+        if (response.dest === clientId && response.tag === "REPLY" &&
+            response.seq > 0 &&
+            response.cmd.cltid === msg.cmd.cltid &&
+            response.cmd.opnum === opnum &&
+            JSON.stringify(response.cmd.op) === JSON.stringify(msg.cmd.op)) {
             clearInterval(intervalID);
-            Deliver_ResCommand(message);
+            Deliver_ResCommand(response);
             opnum++;
             running = false;
         }
@@ -157,7 +158,7 @@ function log_file(msg, envio) {
         valor: value,
         n: n,
         id: id,
-        t: envio ? msg.tiempo_inicio : msg.tiempo_final//END_TIME[0] * 1e9 + END_TIME[1]
+        t: envio ? msg.cmd.tiempo_inicio : msg.cmd.tiempo_final//END_TIME[0] * 1e9 + END_TIME[1]
     };
     const line = JSON.stringify(content);
     console.log(line);

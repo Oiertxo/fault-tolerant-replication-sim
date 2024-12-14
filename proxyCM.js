@@ -29,7 +29,7 @@ clientRouter.on('message', function (...args) {
     try {
         const message = JSON.parse(messageBuffer);
         let tiempo = process.hrtime(START_TIME);
-        message.tiempo_inicio = tiempo[0] * 1e9 + tiempo[1];
+        message.cmd.tiempo_final = tiempo[0] * 1e9 + tiempo[1];
         handlerRouter.send([message.dest, '', JSON.stringify(message)]);
     } catch (err) {
         console.error(`[ProxyCM] Failed to parse JSON from backend: `, err);
@@ -41,7 +41,7 @@ handlerRouter.on('message', function (...args) {
     try {
         const message = JSON.parse(messageBuffer);
         let tiempo = process.hrtime(START_TIME);
-        message.tiempo_final = tiempo[0] * 1e9 + tiempo[1];
+        message.cmd.tiempo_inicio = tiempo[0] * 1e9 + tiempo[1];
         clientRouter.send([message.dest, '', JSON.stringify(message)]);
     } catch (err) {
         console.error('[ProxyCM] Failed to parse JSON from handler:', err);

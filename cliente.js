@@ -136,7 +136,7 @@ function generaOp(numOp) {
     const randAux = Math.random();
     return {
         name: randAux < 0.5 ? "get" : "put",
-        args: randAux < 0.5 ? null : `${clientId}_${numOp}`
+        args: randAux < 0.5 ? "r1" : `r1 ${clientId}_${numOp}`
     }
 }
 
@@ -144,7 +144,7 @@ function log_file(msg, envio) {
     // const type = msg.tag === "REQUEST" ? "inv" : "res";
     const type = envio ? "inv" : "res";
     // const value = msg.tag === "REQUEST" && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
-    const value = envio && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
+    const value = envio && msg.cmd.op.name === "put" ? msg.cmd.op.args.split(" ")[1] : msg.res;
     const n = msg.cmd.opnum;
     // const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
     const id = envio ? msg.source : msg.dest;

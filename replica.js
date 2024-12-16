@@ -23,9 +23,13 @@ const db = new Level(`./dbs/${process.argv[3]}`);
 sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR_R);
 
 // Variables para objetos replicados
-let toexecute = []; // a vector of pairs (rhid, cmd). The first index is 1. Initially, ∀i : toexecute[i] = null;
-let executed = [];  // a vector of pairs (cmd, res). The first index is 1. Initially, ∀i : executed[i] = null;
+let toexecute = new Map(); // a vector of pairs (rhid, cmd). The first index is 1. Initially, ∀i : toexecute[i] = null;
+let executed = new Map();  // a vector of pairs (cmd, res). The first index is 1. Initially, ∀i : executed[i] = null;
 let expectseq = 1;  // a positive integer. It indicates the first null position in toexecute. Initially, expectseq = 1
+const lastSeqCliente = new Map();
+for (let i = 1; i <= config.clientes; i++) {
+    lastSeqCliente[`C${i}`] = 0;
+}
 
 // Función para manejar mensajes recibidos
 sock.on('message', async function (...args) {
@@ -46,15 +50,19 @@ sock.on('message', async function (...args) {
     // Comprobar si el mensaje es el esperado
 
     if (message.seq === expectseq) {
-        toexecute[expectseq] = { rhid: message.source, cmd: message.cmd };
+        toexecute.set(expectseq, { rhid: message.source, cmd: message.cmd });
 
         // Ejecutar los comandos pendientes
-        while (toexecute[expectseq] !== null && toexecute[expectseq] !== undefined) {
+        while (toexecute.has(expectseq) && toexecute.get(expectseq) !== null && toexecute.get(expectseq) !== undefined) {
+            console.warn(toexecute.has(expectseq), toexecute.get(expectseq) !== null, toexecute.get(expectseq) !== undefined);
+
             // Obtener el comando a ejecutar
-            const rhid = toexecute[expectseq].rhid, cmd = toexecute[expectseq].cmd;
+            const rhid = toexecute.get(expectseq).rhid, cmd = toexecute.get(expectseq).cmd;
 
             // Ejecutar el comando
             const res = await Execute(cmd);
+
+            lastSeqCliente[cmd.cltid] = expectseq;
 
             // Preparar el mensaje de respuesta
             const resp_message = {
@@ -67,27 +75,40 @@ sock.on('message', async function (...args) {
             };
 
             // Añadir comando a executed
-            executed[expectseq] = { cmd: cmd, res: resp_message.res };
+            executed.set(expectseq, { cmd: cmd, res: resp_message.res });
 
             // Enviar la respuesta
             sock.send(['', JSON.stringify(resp_message)]);
 
+            console.error(`[Replica] Command executed: ${JSON.stringify(toexecute.get(expectseq))}`);
+            console.error(`[Replica] To execute: `, toexecute);
+            console.error(`[Replica] Seq: `, expectseq);
+
+            // Borrar el comando ejecutado
+            toexecute.delete(expectseq);
 
             // Actualizar expectseq
             expectseq++;
+        }
+        const kk = [];
+        // Borrar el comando previamente ejecutado para dicho cliente
+        for (let [key, value] of executed) {
+            if () {
+                executed.delete(key);
+            }
         }
     }
 
     // Si el mensaje es para ejecutar en el futuro
     else if (expectseq < message.seq) {
         // Almacenar el mensaje para ejecutarlo más tarde
-        toexecute[message.seq] = { source: message.source, cmd: message.cmd };
+        toexecute.set(message.seq, { source: message.source, cmd: message.cmd });
     }
 
-    // Si el mensaje ya fue ejecutado
-    else {
+    // Si el mensaje ya fue ejecutado (ha de ser el último ejecutado)
+    else if (message.seq === expectseq - 1) {
         // Obtener el comando ejecutado
-        let { cmd, res } = executed[message.seq];
+        let { cmd, res } = executed.get(message.seq);
 
         // Preparar el mensaje de respuesta
         let msgres = {
@@ -144,11 +165,19 @@ async function Execute(cmd) {
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
+    // Imprime toexecute
+    for (let [key, value] of executed) {
+        console.log(`[Replica] executed[${key}] = ${JSON.stringify(value)}`);
+    }
     console.log('[Replica] Shutting down server...');
     sock.close();
 });
 
 process.on('SIGTERM', function () {
+    // Imprime toexecute
+    for (let [key, value] of executed) {
+        console.log(`[Replica] executed[${key}] = ${JSON.stringify(value)}`);
+    }
     console.log('[Replica] Shutting down server...');
     sock.close();
 });

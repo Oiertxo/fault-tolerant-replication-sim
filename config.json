@@ -1,6 +1,6 @@
 {
     "clientes": 6,
-    "replicas": 4,
+    "replicas": 3,
     "manejadores": 6,
     "puerto_proxyCM_C": 6969,
     "puerto_proxyCM_M": 6968,

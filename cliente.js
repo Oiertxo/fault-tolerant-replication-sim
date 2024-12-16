@@ -144,10 +144,19 @@ function log_file(msg, envio) {
     // const type = msg.tag === "REQUEST" ? "inv" : "res";
     const type = envio ? "inv" : "res";
     // const value = msg.tag === "REQUEST" && msg.cmd.op.name === "put" ? msg.cmd.op.args : msg.res;
-    const value = envio && msg.cmd.op.name === "put" ? msg.cmd.op.args.split(" ")[1] : msg.res;
+    let value = "";
+    if (envio) {
+        if (msg.cmd.op.name === "put") {
+            value = msg.res;
+        } else {
+            value = null;
+        }
+    } else {
+        value = msg.res;
+    }
     const n = msg.cmd.opnum;
     // const id = msg.tag === "REQUEST" ? msg.source : msg.dest;
-    const id = envio ? msg.source : msg.dest;
+    const id = msg.dest;
 
     const END_TIME = process.hrtime(START_TIME);
 

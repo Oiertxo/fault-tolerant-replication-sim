@@ -26,9 +26,10 @@ sock.connect("tcp://127.0.0.1:" + config.puerto_proxyMR_R);
 let toexecute = new Map(); // a vector of pairs (rhid, cmd). The first index is 1. Initially, ∀i : toexecute[i] = null;
 let executed = new Map();  // a vector of pairs (cmd, res). The first index is 1. Initially, ∀i : executed[i] = null;
 let expectseq = 1;  // a positive integer. It indicates the first null position in toexecute. Initially, expectseq = 1
-const lastSeqCliente = new Map();
+const lastSeqCliente = new Map();   // Map with the sequence number of the last executed command for each Client. 
+
 for (let i = 1; i <= config.clientes; i++) {
-    lastSeqCliente[`C${i}`] = 0;
+    lastSeqCliente.set(`C${i}`, 0);
 }
 
 // Función para manejar mensajes recibidos
@@ -53,8 +54,7 @@ sock.on('message', async function (...args) {
         toexecute.set(expectseq, { rhid: message.source, cmd: message.cmd });
 
         // Ejecutar los comandos pendientes
-        while (toexecute.has(expectseq) && toexecute.get(expectseq) !== null && toexecute.get(expectseq) !== undefined) {
-            console.warn(toexecute.has(expectseq), toexecute.get(expectseq) !== null, toexecute.get(expectseq) !== undefined);
+        while (toexecute.get(expectseq) !== null && toexecute.get(expectseq) !== undefined) {
 
             // Obtener el comando a ejecutar
             const rhid = toexecute.get(expectseq).rhid, cmd = toexecute.get(expectseq).cmd;
@@ -62,7 +62,7 @@ sock.on('message', async function (...args) {
             // Ejecutar el comando
             const res = await Execute(cmd);
 
-            lastSeqCliente[cmd.cltid] = expectseq;
+            lastSeqCliente.set(cmd.cltid, expectseq);
 
             // Preparar el mensaje de respuesta
             const resp_message = {
@@ -80,20 +80,17 @@ sock.on('message', async function (...args) {
             // Enviar la respuesta
             sock.send(['', JSON.stringify(resp_message)]);
 
-            console.error(`[Replica] Command executed: ${JSON.stringify(toexecute.get(expectseq))}`);
-            console.error(`[Replica] To execute: `, toexecute);
-            console.error(`[Replica] Seq: `, expectseq);
-
             // Borrar el comando ejecutado
             toexecute.delete(expectseq);
 
             // Actualizar expectseq
             expectseq++;
         }
-        const kk = [];
-        // Borrar el comando previamente ejecutado para dicho cliente
+
+        // Borrar los comandos previamente ejecutados para dicho cliente (Al hacer la petición
+        // del comando n nunca va a pedir uno anterior. Si lo pide un manejador nos da igual)
         for (let [key, value] of executed) {
-            if () {
+            if (!Array.from(lastSeqCliente.values()).some(v => v === key)) {
                 executed.delete(key);
             }
         }
@@ -106,7 +103,9 @@ sock.on('message', async function (...args) {
     }
 
     // Si el mensaje ya fue ejecutado (ha de ser el último ejecutado)
-    else if (message.seq === expectseq - 1) {
+    else if (message.seq === expectseq - 1
+        && toexecute.get(expectseq - 1) !== null
+        && toexecute.get(expectseq - 1) !== undefined) {
         // Obtener el comando ejecutado
         let { cmd, res } = executed.get(message.seq);
 
@@ -165,19 +164,17 @@ async function Execute(cmd) {
 
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
-    // Imprime toexecute
-    for (let [key, value] of executed) {
-        console.log(`[Replica] executed[${key}] = ${JSON.stringify(value)}`);
-    }
     console.log('[Replica] Shutting down server...');
+    console.log('[Replica] executed: ', executed);
+    console.log('[Replica] toexecute: ', toexecute);
+
     sock.close();
 });
 
 process.on('SIGTERM', function () {
-    // Imprime toexecute
-    for (let [key, value] of executed) {
-        console.log(`[Replica] executed[${key}] = ${JSON.stringify(value)}`);
-    }
     console.log('[Replica] Shutting down server...');
+    console.log('[Replica] executed: ', executed);
+    console.log('[Replica] toexecute: ', toexecute);
+
     sock.close();
 });

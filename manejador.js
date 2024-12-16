@@ -49,6 +49,11 @@ sockCliente.on("message", (...args) => {
                 } else { //El comando ya está secuenciado
                     TransmitToReplicas(seq, msg.cmd, lastServedSeq);
                     myReplies.add(seq);
+
+                    for (let s = lastServedSeq; s < seq; s++) {
+                        delete sequenced[s];
+                    }
+
                     lastServedSeq = Math.max(lastServedSeq, seq);
                 }
             }
@@ -76,6 +81,11 @@ sockSecuenciador.on("message", (...args) => {
                 TransmitToReplicas(seq, m.cmd, lastServedSeq);
                 myCommands.delete(JSON.stringify(m.cmd));
                 myReplies.add(m.seq);
+
+                for (let s = lastServedSeq; s < seq; s++) {
+                    delete sequenced[s];
+                }
+
                 lastServedSeq = Math.max(seq, lastServedSeq);
             }
 
@@ -148,6 +158,10 @@ function TOBroadcast(cmd) {
 // Cierra el socket correctamente al recibir una señal de interrupción
 process.on('SIGINT', function () {
     console.log('[Manejador] Shutting down...');
+    console.log('[Manejador] sequenced: ', sequenced);
+    console.log('[Manejador] mycommands: ', myCommands);
+    console.log('[Manejador] myreplies: ', myReplies);
+
     sockCliente.close();
     sockReplica.close();
     sockSecuenciador.close();
@@ -155,6 +169,10 @@ process.on('SIGINT', function () {
 
 process.on('SIGTERM', function () {
     console.log('[Manejador] Shutting down...');
+    console.log('[Manejador] sequenced: ', sequenced);
+    console.log('[Manejador] mycommands: ', myCommands);
+    console.log('[Manejador] myreplies: ', myReplies);
+
     sockCliente.close();
     sockReplica.close();
     sockSecuenciador.close();

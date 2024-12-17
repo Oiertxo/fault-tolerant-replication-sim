@@ -32,9 +32,14 @@ sockSecuenciador.connect(`tcp://127.0.0.1:${conf.puerto_secuenciador}`);
 // STATE variables
 const sequenced = [],
     myCommands = new Set(),
-    myReplies = new Set();
+    myReplies = new Set(),
+    lastOpPerClient = new Map();
 let localSeq = 1,
     lastServedSeq = 1;
+
+for (let i = 1; i <= conf.clientes; i++) {
+    lastOpPerClient.set(`C${i}`, { seq: 0, opnum: 0 });
+}
 
 //ACTIONS
 sockCliente.on("message", (...args) => {
@@ -51,7 +56,9 @@ sockCliente.on("message", (...args) => {
                     myReplies.add(seq);
 
                     for (let s = lastServedSeq; s < seq; s++) {
-                        delete sequenced[s];
+                        if (!Array.from(lastOpPerClient.values()).some(v => v.seq === s)) {    // Eliminamos de sequenced si no es el último del cliente
+                            delete sequenced[s];
+                        }
                     }
 
                     lastServedSeq = Math.max(lastServedSeq, seq);
@@ -74,6 +81,15 @@ sockSecuenciador.on("message", (...args) => {
             if (seq === -1) {       // No estaba secuenciado aun
                 sequenced[localSeq] = m.cmd;
                 seq = localSeq;
+
+                const oldOp = lastOpPerClient.get(m.cmd.cltid);
+
+                if (oldOp.opnum < m.cmd.opnum) {
+                    lastOpPerClient.set(m.cmd.cltid, { seq: seq, opnum: m.cmd.opnum });
+                    if (oldOp.seq < lastServedSeq) {
+                        delete sequenced[oldOp.seq];
+                    }
+                }
                 localSeq++;
             }
 
@@ -83,7 +99,9 @@ sockSecuenciador.on("message", (...args) => {
                 myReplies.add(m.seq);
 
                 for (let s = lastServedSeq; s < seq; s++) {
-                    delete sequenced[s];
+                    if (!Array.from(lastOpPerClient.values()).some(v => v.seq === s)) {    // Eliminamos de sequenced si no es el último del cliente
+                        delete sequenced[s];
+                    }
                 }
 
                 lastServedSeq = Math.max(seq, lastServedSeq);
@@ -159,8 +177,7 @@ function TOBroadcast(cmd) {
 process.on('SIGINT', function () {
     console.log('[Manejador] Shutting down...');
     console.log('[Manejador] sequenced: ', sequenced);
-    console.log('[Manejador] mycommands: ', myCommands);
-    console.log('[Manejador] myreplies: ', myReplies);
+    console.log('[Manejador] lastOpPerClient: ', lastOpPerClient);
 
     sockCliente.close();
     sockReplica.close();
@@ -170,8 +187,8 @@ process.on('SIGINT', function () {
 process.on('SIGTERM', function () {
     console.log('[Manejador] Shutting down...');
     console.log('[Manejador] sequenced: ', sequenced);
-    console.log('[Manejador] mycommands: ', myCommands);
-    console.log('[Manejador] myreplies: ', myReplies);
+    console.log('[Manejador] lastOpPerClient: ', lastOpPerClient);
+
 
     sockCliente.close();
     sockReplica.close();

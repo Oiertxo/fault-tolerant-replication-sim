@@ -72,6 +72,8 @@ do
 done
 
 # Esperar a que se entreguen varios mensajes
+#sleep .3;
+#kill ${manejadores[1]};
 sleep 2;
 
 # Matar procesos

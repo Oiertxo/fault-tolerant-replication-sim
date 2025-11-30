@@ -73,7 +73,7 @@ Check the output for the consistency report. You can also inspect detailed logs 
 
 ## 📄 Documentation
 
-For a deep dive into the performance benchmarks (throughput vs. latency) and the theoretical correctness of the implementation, please refer to the **[Technical Report (PDF)](https://www.google.com/search?q=docs/Informe.pdf)**.
+For a deep dive into the performance benchmarks (throughput vs. latency) and the theoretical correctness of the implementation, please refer to the **[Technical Report (PDF)](docs/Informe.pdf)**.
 
 ## 👥 Authors
 

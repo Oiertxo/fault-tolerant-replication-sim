@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const conf = require("./config.json");
+const conf = require("../config/config.json");
 
 // Función para leer y parsear los archivos de log
 const leerLogs = (archivos) => {
@@ -36,7 +36,7 @@ const leerLogs = (archivos) => {
 
 const archivos = [];
 
-for (let i = 1; i <= conf.clientes; i++) archivos.push(`logs/C${i}.log`);
+for (let i = 1; i <= conf.clientes; i++) archivos.push(`../tests/logs/C${i}.log`);
 
 // Leemos los eventos de los archivos
 const eventos = leerLogs(archivos);

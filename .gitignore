@@ -1,4 +1,9 @@
-bbdd/*
-dbs/*
-logs/*
-tests.*
+node_modules/
+*.log
+npm-debug.log
+tests/logs/
+dbs/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

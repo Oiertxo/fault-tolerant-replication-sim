@@ -2,7 +2,7 @@
  * node manejador.js id_manejador
  */
 "use strict"
-const conf = require("./config.json"),
+const conf = require("../config/config.json"),
     zmq = require('zeromq');
 
 const RHid = process.argv[2];

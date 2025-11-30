@@ -7,7 +7,7 @@
 const zmq = require('zeromq');
 
 // Lectura de la configuración
-const config = require('./config.json');
+const config = require('../config/config.json');
 
 // Crear un socket 'dealer' y establecer su identidad basada en el PID del proceso
 const sock = zmq.socket('dealer');

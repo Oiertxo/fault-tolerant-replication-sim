@@ -4,7 +4,7 @@
 "use strict"
 
 const zmq = require('zeromq'),
-    conf = require("./config.json");
+    conf = require("../config/config.json");
 
 // Ids de los manejadores
 const nRHs = conf.manejadores,

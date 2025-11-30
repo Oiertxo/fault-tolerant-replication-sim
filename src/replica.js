@@ -8,7 +8,7 @@ const zmq = require('zeromq');
 const { Level } = require('level');
 
 // Lectura de la configuración
-const config = require('./config.json');
+const config = require('../config/config.json');
 
 // Configuración e inicialización del socket y la base de datos
 const sock = zmq.socket('dealer');

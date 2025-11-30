@@ -1,0 +1,41 @@
+{
+  "name": "fault-tolerant-replication-sim",
+  "version": "1.0.0",
+  "description": "Simulation of a Fault-Tolerant Distributed System using Active Replication and Atomic Broadcast (TO-URB).",
+  "main": "src/secuenciador.js",
+  "scripts": {
+    "simulate": "bash scripts/ejecutar.sh",
+    "clean": "rm -rf tests/logs dbs",
+    "test": "echo \"Run 'npm run simulate' to execute the full integration test.\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Oiertxo/fault-tolerant-replication-sim.git"
+  },
+  "keywords": [
+    "distributed-systems",
+    "fault-tolerance",
+    "active-replication",
+    "atomic-broadcast",
+    "consistency",
+    "nodejs"
+  ],
+  "author": "Oier Alduncin",
+  "contributors": [
+    {
+      "name": "Oier Layana"
+    },
+    {
+      "name": "Mihail Cojocaru"
+    }
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Oiertxo/fault-tolerant-replication-sim/issues"
+  },
+  "homepage": "https://github.com/Oiertxo/fault-tolerant-replication-sim#readme",
+  "dependencies": {
+    "level": "^10.0.0",
+    "zeromq": "^5.3.1"
+  }
+}

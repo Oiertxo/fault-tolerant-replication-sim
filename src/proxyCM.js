@@ -5,7 +5,7 @@
 "use strict"
 
 const zmq = require('zeromq'),
-    conf = require("./config.json");
+    conf = require("../config/config.json");
 
 const ip_clientes = `tcp://127.0.0.1:${conf.puerto_proxyCM_C}`,
     ip_manejadores = `tcp://127.0.0.1:${conf.puerto_proxyCM_M}`;
